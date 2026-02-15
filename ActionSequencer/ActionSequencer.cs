@@ -1,19 +1,22 @@
 ﻿namespace Project.Sequencer {
     public class ActionSequencer : IAction {
-        private IAction[] actions;
+        private readonly IAction[] actions;
+        private readonly List<IAction> runningActions;
+
         private int currentIndex;
         private bool isRunning;
 
-        public bool IsRunning => isRunning;
         public IAction CurrentAction => actions[currentIndex];
 
-        public bool KeepRunning => !IsRunning;
+        public bool KeepWaiting => isRunning;
+        public bool KeepUpdating => isRunning || runningActions.Count > 0;
 
         public event Action? OnStart;
         public event Action? OnEnd;
 
         public ActionSequencer(IAction[] actions) {
             this.actions = actions;
+            runningActions = new();
         }
 
         public void Start(int index = 0) {
@@ -36,12 +39,18 @@
         }
 
         public void Update() {
-            if (!isRunning)
+            if (!KeepUpdating)
                 return;
 
-            CurrentAction.Update();
+            for (int i = 0; i < runningActions.Count; i++) {
+                runningActions[i].Update();
+                if (!runningActions[i].KeepUpdating) {
+                    runningActions.RemoveAt(i);
+                    --i;
+                }
+            }
 
-            while (isRunning && !CurrentAction.KeepRunning) {
+            while (isRunning && !CurrentAction.KeepWaiting) {
                 NextAction();
             }
         }
@@ -79,6 +88,10 @@
 
         private void Execute(IAction action) {
             action.Execute();
+
+            if (action.KeepUpdating) {
+                runningActions.Add(action);
+            }
         }
 
         void IAction.Execute() {

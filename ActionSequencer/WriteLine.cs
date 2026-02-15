@@ -1,54 +1,72 @@
-﻿using Timer = System.Timers.Timer;
+﻿using System.Diagnostics;
 
 namespace Project.Sequencer.Actions {
     public class WriteLine : Action {
-        private readonly string output;
-        private readonly Timer timer;
+        protected readonly string output;
+        protected readonly Stopwatch timer;
+        protected readonly long delay;
+        private readonly (int Left, int Top) cursorDelta;
 
-        private int currentIndex;
+        protected (int Left, int Top) cursorPosition;
+        protected int currentIndex;
 
-        public WriteLine(WaitType waitType, string output, float time = 0f) : base(waitType) {
+        public WriteLine(WaitType waitType, string output, long delay = 0L, (int Left, int Top)? cursorDelta = null) : base(waitType) {
             this.output = output;
-            currentIndex = 0;
+            this.delay = delay;
+            this.cursorDelta = cursorDelta ?? (0, 0);
 
-            timer = new(time) {
-                AutoReset = true
-            };
-
-            timer.Elapsed += Timer_Elapsed;
+            currentIndex = -1;
+            timer = new();
         }
 
-        public override bool IsEnded() => currentIndex >= output.Length;
+        public override bool IsEnded() => output.Length == 0 || currentIndex >= output.Length;
 
         public override void Execute() {
+            cursorPosition = Console.GetCursorPosition();
+            cursorPosition.Left += cursorDelta.Left;
+            cursorPosition.Top += cursorDelta.Top;
+
             WriteNextChar();
             timer.Start();
         }
 
+        public override void Update() {
+            if (timer.ElapsedMilliseconds < delay)
+                return;
+
+            WriteNextChar();
+            timer.Restart();
+        }
+
         public override void Reset() {
-            timer.Stop();
+            timer.Reset();
             currentIndex = -1;
         }
 
-        private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e) {
-            WriteNextChar();
-        }
-
-        private void WriteNextChar() {
+        protected virtual void WriteNextChar() {
             if (IsEnded())
                 return;
 
             ++currentIndex;
-            Console.Write(output[currentIndex]);
+            (int Left, int Top) oldCursorPos = Console.GetCursorPosition();
+
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            Console.WriteLine(output[currentIndex]);
+
+            if (oldCursorPos.Top == cursorPosition.Top) {
+                ++oldCursorPos.Top;
+            }
+
+            ++cursorPosition.Left;
+            Console.SetCursorPosition(oldCursorPos.Left, oldCursorPos.Top);
 
             if (currentIndex == output.Length - 1) {
                 End();
             }
         }
 
-        private void End() {
+        protected void End() {
             timer.Stop();
-            Console.WriteLine();
             currentIndex = output.Length;
         }
     }

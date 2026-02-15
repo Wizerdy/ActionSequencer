@@ -1,6 +1,7 @@
 ﻿namespace Project.Sequencer {
     public interface IAction {
-        public bool KeepRunning { get; }
+        public bool KeepWaiting { get; }
+        public bool KeepUpdating { get; }
 
         public void Execute();
         public void Update();

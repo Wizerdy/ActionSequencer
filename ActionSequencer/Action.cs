@@ -6,7 +6,7 @@
     public abstract class Action : IAction {
         private readonly WaitType waitType;
 
-        public bool KeepRunning {
+        public bool KeepWaiting {
             get {
                 return waitType switch {
                     WaitType.NONE => false,
@@ -15,6 +15,8 @@
                 };
             }
         }
+
+        public bool KeepUpdating => !IsEnded();
 
         public Action(WaitType waitType) {
             this.waitType = waitType;
