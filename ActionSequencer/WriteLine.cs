@@ -51,10 +51,17 @@ namespace Project.Sequencer.Actions {
             (int Left, int Top) oldCursorPos = Console.GetCursorPosition();
 
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
-            Console.WriteLine(output[currentIndex]);
+            Console.Write(output[currentIndex]);
 
             if (oldCursorPos.Top == cursorPosition.Top) {
                 ++oldCursorPos.Top;
+            }
+
+            // Temp fix: Automatic scroll on reaching bottom of console window -Coudln't find cleaner fix :'(
+            if (oldCursorPos.Top >= Console.BufferHeight) {
+                oldCursorPos.Top = Console.BufferHeight - 1;
+                --cursorPosition.Top;
+                Console.WriteLine();
             }
 
             ++cursorPosition.Left;

@@ -20,7 +20,7 @@ namespace Project {
                     new Actions.WaitTime(LINE_DELAY),
                     new Actions.WriteLine(Actions.WaitType.ENDED, "It is only limited by a programmer's imagination", CHAR_TYPE_DELAY),
                     new Actions.WaitTime(CHAR_TYPE_DELAY * 20L),
-                    new Actions.WriteLine(Actions.WaitType.ENDED, "...", CHAR_TYPE_DELAY * 20L, (46, -1)),
+                    new Actions.WriteLine(Actions.WaitType.ENDED, "...", CHAR_TYPE_DELAY * 20L, (48, -1)),
                     new Actions.WaitTime(LINE_DELAY),
                     new Actions.WriteLine(Actions.WaitType.ENDED, "\n"),
                     new Actions.WriteLine(Actions.WaitType.ENDED, "Parrallelism?", CHAR_TYPE_DELAY),
